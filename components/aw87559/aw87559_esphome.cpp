@@ -8,7 +8,7 @@ static const char *const TAG = "aw87559";
 void AW87559Component::setup() {
   ESP_LOGD(TAG, "Setting up AW87559...");
 
-  // 处理复位引脚（如果配置了）
+  // 处理复位引脚（如果有配置）
   if (this->reset_gpio_ != nullptr) {
     this->reset_gpio_->setup();
     this->reset_gpio_->digital_write(false);
@@ -17,7 +17,7 @@ void AW87559Component::setup() {
     esphome::delay(2);
   }
 
-  // 读取芯片 ID 寄存器 0x00，应为 0x5A
+  // 读取芯片 ID 寄存器 0x00，应返回 0x5A
   uint8_t id;
   if (!this->read_reg(AW87559_REG_CHIPID, &id)) {
     ESP_LOGE(TAG, "AW87559 not responding - read ID failed at address 0x%02X", this->address_);
@@ -58,13 +58,13 @@ bool AW87559Component::read_reg(uint8_t reg, uint8_t *out_value) {
     return false;
   }
 
-  // 发送寄存器地址
+  // 先写入要读取的寄存器地址（不带数据）
   if (!this->write_bytes(reg, nullptr, 0)) {
     ESP_LOGE(TAG, "Failed to send register address 0x%02X", reg);
     return false;
   }
 
-  // 读取 1 字节数据
+  // 再读取 1 字节数据
   return this->read_bytes(out_value, 1);
 }
 
