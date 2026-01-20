@@ -1,4 +1,7 @@
-#include "esphome/core/log.h"
+#pragma once
+
+#include "esphome/components/i2c/i2c.h"
+#include "esphome/core/component.h"
 
 namespace esphome {
 namespace si5351 {
