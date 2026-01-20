@@ -1,4 +1,3 @@
-#include "si5351.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
