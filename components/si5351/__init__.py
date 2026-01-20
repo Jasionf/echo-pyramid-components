@@ -2,7 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import i2c
 from esphome.const import CONF_ID
-esp
+from esphome import pins
 
 CODEOWNERS = ["@Vincent"]
 DEPENDENCIES = ["i2c"]
@@ -15,7 +15,7 @@ CONFIG_SCHEMA = (
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(Si5351Component),
-            cv.Optional(CONF_RESET_PIN): cv.gpio_pin_schema,
+            cv.Optional(CONF_RESET_PIN): pins.gpio_pin_schema,
         }
         }
     )
