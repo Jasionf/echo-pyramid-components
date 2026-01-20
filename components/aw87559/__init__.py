@@ -16,4 +16,4 @@ CONFIG_SCHEMA = cv.Schema(
             cv.only_on_esp32, cv.only_on_esp8266, cv.invalid("Reset pin is not supported on this platform")
         ),
     }
-).extend(cv.COMPONENT_SCHEMA).extend(i2c.i2c_device_schema(0x58))  # 你的地址是 0x58
+).extend(cv.COMPONENT_SCHEMA).extend(i2c.i2c_device_schema(0x58))
