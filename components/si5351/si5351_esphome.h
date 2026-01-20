@@ -23,7 +23,10 @@ class Si5351Component : public Component, public i2c::I2CDevice {
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override { return setup_priority::PRE_HARDWARE; }
-  
+
+  bool write_reg(uint8_t reg, uint8_t value);
+  bool read_reg(uint8_t reg, uint8_t *out_value);
+  bool apply_table(const uint8_t *pairs, size_t length);
 
 };
 
