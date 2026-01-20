@@ -11,13 +11,6 @@ static const char *TAG = "si5351";
 void Si5351Component::setup() {
   ESP_LOGD(TAG, "Setting up Si5351 Clock Generator...");
   
-  if (!is_failed()) {
-    // Disable all outputs
-    if (!write_reg(REG_OUTPUT_ENABLE_CONTROL, 0xFF)) {
-      ESP_LOGE(TAG, "Failed to disable Si5351 outputs");
-      mark_failed();
-      return;
-    }
     
     // Power down output drivers (registers 16, 17, 18)
     uint8_t output_drivers[3] = {0x80, 0x80, 0x80};
@@ -91,14 +84,5 @@ void Si5351Component::dump_config() {
   }
 }
   
-  // Create buffer: [reg_addr, data[0], data[1], ...]
-  std::vector<uint8_t> buf;
-  buf.reserve(length + 1);
-  buf.push_back(start_reg);
-  buf.insert(buf.end(), data, data + length);
-  
-  return write_bytes_raw(buf);
-}
-
 }  // namespace si5351
 }  // namespace esphome
