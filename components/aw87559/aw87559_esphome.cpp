@@ -59,7 +59,7 @@ bool AW87559Component::read_reg(uint8_t reg, uint8_t *out_value) {
     return false;
   }
 
-  // 第一步：发送要读取的寄存器地址（不带数据）
+  // 第一步：发送要读取的寄存器地址（不带后续数据）
   if (!this->write_bytes(reg, nullptr, 0)) {
     ESP_LOGE(TAG, "Failed to send register address 0x%02X", reg);
     return false;
