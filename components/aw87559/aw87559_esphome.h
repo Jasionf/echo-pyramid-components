@@ -38,8 +38,6 @@ class AW87559Component : public esphome::Component, public esphome::i2c::I2CDevi
 
  protected:
   esphome::GPIOPin *reset_gpio_{nullptr};
-
-  bool write_bytes(uint8_t reg, const uint8_t *data, size_t len);
 };
 
 }  // namespace aw87559
