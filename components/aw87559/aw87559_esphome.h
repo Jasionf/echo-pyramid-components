@@ -30,14 +30,10 @@ class AW87559Component : public esphome::Component, public esphome::i2c::I2CDevi
   void dump_config() override;
   float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; }
 
-  void set_reset_gpio(esphome::GPIOPin *pin) { reset_gpio_ = pin; }
-
   bool write_reg(uint8_t reg, uint8_t value);
   bool read_reg(uint8_t reg, uint8_t *out_value);
   bool apply_table(const uint8_t *pairs, size_t length);
 
- protected:
-  esphome::GPIOPin *reset_gpio_{nullptr};
 };
 
 }  // namespace aw87559

@@ -30,8 +30,6 @@ class Si5351Component : public esphome::Component, public esphome::i2c::I2CDevic
   bool read_reg(uint8_t reg, uint8_t *out_value);
   bool apply_table(const uint8_t *pairs, size_t length);
 
- protected:
-  esphome::GPIOPin *reset_gpio_{nullptr};
 };
 
 }  // namespace si5351
