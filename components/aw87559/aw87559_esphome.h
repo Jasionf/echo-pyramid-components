@@ -33,7 +33,7 @@ class AW87559Component : public esphome::Component, public esphome::i2c::I2CDevi
   bool write_reg(uint8_t reg, uint8_t value);
   bool read_reg(uint8_t reg, uint8_t *out_value);
   bool apply_table(const uint8_t *pairs, size_t length);
-
+  bool setup_complete_{false};
 };
 
 }  // namespace aw87559

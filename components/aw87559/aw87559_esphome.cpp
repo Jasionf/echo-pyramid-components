@@ -52,10 +52,6 @@ void AW87559Component::dump_config() {
   
   // 打印 I2C 地址信息
   LOG_I2C_DEVICE(this);
-
-  // 打印 Reset GPIO（如果有配置）
-  if (this->reset_gpio_ != nullptr) {
-    LOG_PIN("  Reset GPIO: ", this->reset_gpio_);
   }
 
   // 打印初始化状态
