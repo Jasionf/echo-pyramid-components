@@ -22,7 +22,7 @@ static const uint8_t NUM_RGB_CHANNELS            = 4     // 4个通道（2条灯
 static const uint8_t NUM_LEDS_PER_GROUP          = 7     // 每组7个LED
 
 
-class STM32RGBComponent : public esphome::Component, public esphome::i2c::I2CDevice {
+class STM32RGBComponent : public esphome::public esphome::light::LightOutput, public esphome::i2c::I2CDevice {
  public:
   void setup() override;
   void dump_config() override;
@@ -45,5 +45,5 @@ class STM32RGBComponent : public esphome::Component, public esphome::i2c::I2CDev
 };
 
 
-}  // namespace stm32_rgb
+}  // namespace stm32rgb
 }  // namespace esphome
