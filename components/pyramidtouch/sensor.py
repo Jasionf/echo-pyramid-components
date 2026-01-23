@@ -29,27 +29,22 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_SWIPE_TIMEOUT_MS, default=500): cv.int_range(min=50, max=2000),
 
             cv.Optional(CONF_TOUCH1): sensor.sensor_schema(
-                unit_of_measurement=None,
                 accuracy_decimals=0,
                 icon="mdi:gesture-tap",
             ),
             cv.Optional(CONF_TOUCH2): sensor.sensor_schema(
-                unit_of_measurement=None,
                 accuracy_decimals=0,
                 icon="mdi:gesture-tap",
             ),
             cv.Optional(CONF_TOUCH3): sensor.sensor_schema(
-                unit_of_measurement=None,
                 accuracy_decimals=0,
                 icon="mdi:gesture-tap",
             ),
             cv.Optional(CONF_TOUCH4): sensor.sensor_schema(
-                unit_of_measurement=None,
                 accuracy_decimals=0,
                 icon="mdi:gesture-tap",
             ),
             cv.Optional(CONF_SWIPE_EVENT): sensor.sensor_schema(
-                unit_of_measurement=None,
                 accuracy_decimals=0,
                 icon="mdi:gesture-swipe",
             ),

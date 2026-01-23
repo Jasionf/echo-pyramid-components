@@ -1,7 +1,13 @@
 esphome:
   name: pyramid-touch-demo
-  platform: ESP32
+
+esp32:
   board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+external_components:
+  - source: local
 
 i2c:
   sda: 38
@@ -10,6 +16,15 @@ i2c:
 
 logger:
   level: DEBUG
+
+api:
+ota:
+wifi:
+  ssid: "<YOUR_WIFI_SSID>"
+  password: "<YOUR_WIFI_PASSWORD>"
+  ap:
+    ssid: "pyramid-touch-demo"
+    password: "12345678"
 
 # PyramidTouch: read STM32 touch and expose sensors
 sensor:
@@ -30,7 +45,6 @@ sensor:
       name: "Touch Swipe Event"
       entity_category: diagnostic
 
-# Example: use numeric touch sensors for automations in HA
-# - Touch 1 == 1 -> turn on a light
-# - Swipe events:
-#   1=LEFT_UP, 2=LEFT_DOWN, 3=RIGHT_UP, 4=RIGHT_DOWN
+# In Home Assistant you can automate on:
+# - Touch X == 1 to toggle lights
+# - Swipe event values: 1=LEFT_UP, 2=LEFT_DOWN, 3=RIGHT_UP, 4=RIGHT_DOWN
