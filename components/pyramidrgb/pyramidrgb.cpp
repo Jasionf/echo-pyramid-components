@@ -36,7 +36,10 @@ bool PyramidRGBComponent::set_strip_brightness(uint8_t strip, uint8_t brightness
   if (brightness > 100) brightness = 100;
   uint8_t reg = (strip == 1) ? RGB1_BRIGHTNESS_REG_ADDR : RGB2_BRIGHTNESS_REG_ADDR;
   uint8_t b = (uint8_t)((brightness * 255) / 100);
-  return this->write_byte(reg, b);
+  bool ok = this->write_byte(reg, b);
+  ESP_LOGD(TAG, "Set brightness: strip=%u reg=0x%02X b=%u (%%=%u) -> %s",
+           strip, reg, b, brightness, ok ? "OK" : "FAIL");
+  return ok;
 }
 
 uint8_t PyramidRGBComponent::channel_base_addr_(uint8_t channel) const {
@@ -79,7 +82,10 @@ bool PyramidRGBComponent::set_channel_color(uint8_t channel, uint8_t r, uint8_t 
     buf[i * 4 + 3] = 0x00; // reserved
   }
   uint8_t base = channel_base_addr_(channel);
-  return write_color_block_(base, buf, sizeof(buf));
+  bool ok = write_color_block_(base, buf, sizeof(buf));
+  ESP_LOGD(TAG, "Set color: ch=%u base=0x%02X RGB=(%u,%u,%u) len=%u -> %s",
+           channel, base, r, g, b, (unsigned)sizeof(buf), ok ? "OK" : "FAIL");
+  return ok;
 }
 
 bool PyramidRGBComponent::set_channel_color_component(uint8_t channel, RGBColorChannel color, uint8_t value) {
@@ -90,6 +96,7 @@ bool PyramidRGBComponent::set_channel_color_component(uint8_t channel, RGBColorC
     case COLOR_B: channel_colors_[channel][2] = value; break;
     default: return false;
   }
+  ESP_LOGD(TAG, "Set component: ch=%u comp=%d val=%u", channel, (int) color, value);
   return set_channel_color(channel,
                            channel_colors_[channel][0],
                            channel_colors_[channel][1],
