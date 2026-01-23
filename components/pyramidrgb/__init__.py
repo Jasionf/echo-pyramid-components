@@ -36,5 +36,6 @@ async def to_code(config):
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
 
-    # 初始亮度设置
-    cg.add(var.set_strip_brightness(config[CONF_STRIP], config[CONF_BRIGHTNESS]))
+    # 设置初始参数，实际写入放在 C++ setup 中执行
+    cg.add(var.set_initial_strip(config[CONF_STRIP]))
+    cg.add(var.set_initial_brightness(config[CONF_BRIGHTNESS]))

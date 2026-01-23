@@ -8,6 +8,22 @@ static const char *const TAG = "pyramidrgb";
 void PyramidRGBComponent::setup() {
   ESP_LOGI(TAG, "PyramidRGB init (STM32 RGB controller at 0x%02X)", this->address_);
   // 此处不做强制探测，避免不同固件下读寄存器失败导致误判。
+
+  // 应用初始亮度（在 I2C 就绪后执行）
+  if (!this->set_strip_brightness(initial_strip_, initial_brightness_)) {
+    ESP_LOGW(TAG, "Failed to set initial brightness for strip %u", initial_strip_);
+  }
+
+  // 若设置了非零亮度但未设置颜色，默认为该 strip 的两个通道填充低强度白色，便于肉眼观察
+  if (initial_brightness_ > 0) {
+    if (initial_strip_ == 1) {
+      this->set_channel_color(0, 16, 16, 16);
+      this->set_channel_color(1, 16, 16, 16);
+    } else if (initial_strip_ == 2) {
+      this->set_channel_color(2, 16, 16, 16);
+      this->set_channel_color(3, 16, 16, 16);
+    }
+  }
 }
 
 void PyramidRGBComponent::dump_config() {
