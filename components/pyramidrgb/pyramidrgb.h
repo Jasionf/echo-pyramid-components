@@ -35,6 +35,7 @@ class PyramidRGBComponent : public i2c::I2CDevice, public Component {
   // 在 codegen 阶段设置初始参数（在 setup 中应用）
   void set_initial_strip(uint8_t strip) { initial_strip_ = strip; }
   void set_initial_brightness(uint8_t brightness) { initial_brightness_ = brightness; }
+  void set_initial_white(uint8_t white) { initial_white_level_ = white; }
 
   // 设置亮度：strip=1 或 2，brightness 0..100
   bool set_strip_brightness(uint8_t strip, uint8_t brightness);
@@ -57,6 +58,7 @@ class PyramidRGBComponent : public i2c::I2CDevice, public Component {
   // 初始参数
   uint8_t initial_strip_ {1};
   uint8_t initial_brightness_ {0};
+  uint8_t initial_white_level_ {0};
 };
 
 }  // namespace pyramidrgb

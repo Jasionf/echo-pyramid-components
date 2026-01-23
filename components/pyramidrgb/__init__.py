@@ -10,6 +10,7 @@ CODEOWNERS = ["@Jasionf"]
 CONF_PYRAMIDRGB_ID = "pyramidrgb_id"
 CONF_STRIP = "strip"
 CONF_BRIGHTNESS = "brightness"
+CONF_INITIAL_WHITE = "initial_white"
 
 pyramidrgb_ns = cg.esphome_ns.namespace("pyramidrgb")
 PyramidRGBComponent = pyramidrgb_ns.class_("PyramidRGBComponent", cg.Component, i2c.I2CDevice)
@@ -24,6 +25,7 @@ CONFIG_SCHEMA = (
             cv.GenerateID(): cv.declare_id(PyramidRGBComponent),
             cv.Optional(CONF_STRIP, default=1): cv.int_range(min=1, max=2),
             cv.Optional(CONF_BRIGHTNESS, default=100): cv.int_range(min=0, max=100),
+            cv.Optional(CONF_INITIAL_WHITE, default=0): cv.int_range(min=0, max=255),
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -39,3 +41,4 @@ async def to_code(config):
     # 设置初始参数，实际写入放在 C++ setup 中执行
     cg.add(var.set_initial_strip(config[CONF_STRIP]))
     cg.add(var.set_initial_brightness(config[CONF_BRIGHTNESS]))
+    cg.add(var.set_initial_white(config[CONF_INITIAL_WHITE]))

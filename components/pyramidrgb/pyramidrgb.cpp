@@ -13,6 +13,19 @@ void PyramidRGBComponent::setup() {
   if (!this->set_strip_brightness(initial_strip_, initial_brightness_)) {
     ESP_LOGW(TAG, "Failed to set initial brightness for strip %u", initial_strip_);
   }
+  // 如果配置了初始白光强度，则为该 strip 对应的两个通道填充白光（逐 LED 写入）
+  if (initial_white_level_ > 0) {
+    uint8_t r = initial_white_level_;
+    uint8_t g = initial_white_level_;
+    uint8_t b = initial_white_level_;
+    if (initial_strip_ == 1) {
+      this->set_channel_color(0, r, g, b);
+      this->set_channel_color(1, r, g, b);
+    } else if (initial_strip_ == 2) {
+      this->set_channel_color(2, r, g, b);
+      this->set_channel_color(3, r, g, b);
+    }
+  }
 }
 
 void PyramidRGBComponent::dump_config() {
