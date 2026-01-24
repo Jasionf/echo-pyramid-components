@@ -1,7 +1,7 @@
 ---
 substitutions:
-  name: atoms3r-with-echo-base
-  friendly_name: AtomS3R Echo Base Voice Assistant
+  name: atoms3r-with-echo-pyramid
+  friendly_name: AtomS3R Echo Pyramid Voice Assistant
 
   # Casita images
   loading_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/main/casita/loading_320_240.png
@@ -137,7 +137,7 @@ binary_sensor:
 
 external_components:
   - source: github://Jasionf/echo-pyramid-components@main
-    components: [aw87559,si5351,lp5562]
+    components: [aw87559,si5351,lp5562,pyramidrgb,pyramidtouch]
     refresh: 0s
 
 # I2C Bus Configuration
@@ -219,10 +219,11 @@ speaker:
 
 media_player:
   - platform: speaker
-    name: "Echo Base Player"
-    id: echo_base_player
-    volume_min: 0.5
-    volume_max: 0.8
+    name: "Echo Pyramid Player"
+    id: echo_pyramid_player
+    volume_min: 0.0
+    volume_max: 1.0
+    volume_initial: 0.10
     announcement_pipeline:
       speaker: i2s_speaker
       format: FLAC
@@ -312,12 +313,12 @@ switch:
     on_turn_off:
       # Turn off the repeat mode and disable the pause between playlist items
       - lambda: |-
-              id(echo_base_player)
+              id(echo_pyramid_player)
                 ->make_call()
                 .set_command(media_player::MediaPlayerCommand::MEDIA_PLAYER_COMMAND_REPEAT_OFF)
                 .set_announcement(true)
                 .perform();
-              id(echo_base_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 0);
+              id(echo_pyramid_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 0);
       # Stop playing the alarm
       - media_player.stop:
           announcement: true
@@ -326,12 +327,12 @@ switch:
       - script.execute: stop_wake_word
       # Turn on the repeat mode and pause for 1000 ms between playlist items/repeats
       - lambda: |-
-            id(echo_base_player)
+            id(echo_pyramid_player)
               ->make_call()
               .set_command(media_player::MediaPlayerCommand::MEDIA_PLAYER_COMMAND_REPEAT_ONE)
               .set_announcement(true)
               .perform();
-            id(echo_base_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 1000);
+            id(echo_pyramid_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 1000);
       - media_player.speaker.play_on_device_media_file:
           media_file: timer_finished_sound
           announcement: true
@@ -455,7 +456,7 @@ micro_wake_word:
 voice_assistant:
   id: va
   microphone: i2s_mic
-  media_player: echo_base_player
+  media_player: echo_pyramid_player
   micro_wake_word: mww
   noise_suppression_level: 2
   auto_gain: 31dBFS
@@ -551,6 +552,54 @@ globals:
     type: int
     restore_value: false
     initial_value: ${voice_assist_not_ready_phase_id}
+  - id: current_volume
+    type: float
+    restore_value: true
+    initial_value: '0.3'
+
+sensor:
+  - platform: pyramidtouch
+    address: 0x1A
+    i2c_id: ext_bus
+    update_interval: 50ms
+    publish_swipe_event: true
+    swipe_timeout_ms: 500
+    touch1:
+      name: "Touch 1"
+    touch2:
+      name: "Touch 2"
+    touch3:
+      name: "Touch 3"
+    touch4:
+      name: "Touch 4"
+    swipe_event:
+      name: "Touch Swipe Event"
+      entity_category: diagnostic
+      on_value:
+        then:
+          - lambda: |-
+              // Swipe codes:
+              // 1 = Left Up
+              // 2 = Left Down
+              // 3 = Right Up
+              // 4 = Right Down
+              const float step = 0.05f;  // 5% per gesture
+              float v = id(current_volume);
+              const int ev = (int) x;
+
+              if (ev == 1 || ev == 3) {
+                v = std::min(1.0f, v + step);
+              } else if (ev == 2 || ev == 4) {
+                v = std::max(0.0f, v - step);
+              } else {
+                return;
+              }
+
+              auto call = id(echo_pyramid_player).make_call();
+              call.set_volume(v);
+              call.perform();
+
+              id(current_volume) = v;
 
 
 lp5562:
@@ -562,11 +611,123 @@ lp5562:
   # logarithmic_dimming: true
   white_current: 17.5
 
+pyramidrgb:
+  - id: pyramid_rgb1
+    i2c_id: ext_bus
+    strip: 1
+  - id: pyramid_rgb2
+    i2c_id: ext_bus
+    strip: 2
+
+number:
+  # Master media player volume (0.0–1.0)
+  - platform: template
+    name: "Master Volume"
+    id: master_volume
+    icon: "mdi:volume-high"
+    min_value: 0.0
+    max_value: 0.4
+    step: 0.01
+    restore_value: true
+    initial_value: 0.3
+    optimistic: true
+    set_action:
+      - lambda: |-
+          float v = x;
+          auto call = id(echo_pyramid_player).make_call();
+          call.set_volume(v);
+          call.perform();
+          id(current_volume) = v;
+
+  # Master RGB brightness (applies to both strips, 0–100%)
+  - platform: template
+    name: "RGB Master Brightness"
+    id: rgb_master_brightness
+    icon: "mdi:brightness-6"
+    min_value: 0
+    max_value: 100
+    step: 1
+    restore_value: true
+    initial_value: 100
+    optimistic: true
+    set_action:
+      - lambda: |-
+          uint8_t b = (uint8_t) x;
+          id(pyramid_rgb1).set_strip_brightness(1, b);
+          id(pyramid_rgb2).set_strip_brightness(2, b);
+
+
+
 output:
   - platform: lp5562
     id: lp5562_white_channel
     lp5562_id: lp5562_led
     channel: white
+  - platform: pyramidrgb
+    id: rgb1_ch0_red
+    pyramidrgb_id: pyramid_rgb1
+    channel: 0
+    color: red
+  - platform: pyramidrgb
+    id: rgb1_ch0_green
+    pyramidrgb_id: pyramid_rgb1
+    channel: 0
+    color: green
+  - platform: pyramidrgb
+    id: rgb1_ch0_blue
+    pyramidrgb_id: pyramid_rgb1
+    channel: 0
+    color: blue
+  # Strip 1, Channel 1 (Group 2)
+  - platform: pyramidrgb
+    id: rgb1_ch1_red
+    pyramidrgb_id: pyramid_rgb1
+    channel: 1
+    color: red
+  - platform: pyramidrgb
+    id: rgb1_ch1_green
+    pyramidrgb_id: pyramid_rgb1
+    channel: 1
+    color: green
+  - platform: pyramidrgb
+    id: rgb1_ch1_blue
+    pyramidrgb_id: pyramid_rgb1
+    channel: 1
+    color: blue
+
+  # Strip 2, Channel 2 (Group 1)
+  - platform: pyramidrgb
+    id: rgb2_ch2_red
+    pyramidrgb_id: pyramid_rgb2
+    channel: 2
+    color: red
+  - platform: pyramidrgb
+    id: rgb2_ch2_green
+    pyramidrgb_id: pyramid_rgb2
+    channel: 2
+    color: green
+  - platform: pyramidrgb
+    id: rgb2_ch2_blue
+    pyramidrgb_id: pyramid_rgb2
+    channel: 2
+    color: blue
+
+  # Strip 2, Channel 3 (Group 2)
+  - platform: pyramidrgb
+    id: rgb2_ch3_red
+    pyramidrgb_id: pyramid_rgb2
+    channel: 3
+    color: red
+  - platform: pyramidrgb
+    id: rgb2_ch3_green
+    pyramidrgb_id: pyramid_rgb2
+    channel: 3
+    color: green
+  - platform: pyramidrgb
+    id: rgb2_ch3_blue
+    pyramidrgb_id: pyramid_rgb2
+    channel: 3
+    color: blue
 
 light:
   - platform: monochromatic
@@ -574,6 +735,31 @@ light:
     output: lp5562_white_channel
     icon: "mdi:television"
     restore_mode: RESTORE_DEFAULT_ON
+  - platform: rgb
+    name: "Strip1 Group1"
+    red: rgb1_ch0_red
+    green: rgb1_ch0_green
+    blue: rgb1_ch0_blue
+
+  - platform: rgb
+    name: "Strip1 Group2"
+    red: rgb1_ch1_red
+    green: rgb1_ch1_green
+    blue: rgb1_ch1_blue
+
+  - platform: rgb
+    name: "Strip2 Group1"
+    red: rgb2_ch2_red
+    green: rgb2_ch2_green
+    blue: rgb2_ch2_blue
+
+  - platform: rgb
+    name: "Strip2 Group2"
+    red: rgb2_ch3_red
+    green: rgb2_ch3_green
+    blue: rgb2_ch3_blue
+
+
 
 display:
   - platform: mipi_spi
@@ -689,14 +875,14 @@ script:
     then:
       - lambda: |-
           if (priority) {
-            id(echo_base_player)
+            id(echo_pyramid_player)
               ->make_call()
               .set_command(media_player::MediaPlayerCommand::MEDIA_PLAYER_COMMAND_STOP)
               .set_announcement(true)
               .perform();
           }
-          if ( (id(echo_base_player).state != media_player::MediaPlayerState::MEDIA_PLAYER_STATE_ANNOUNCING ) || priority) {
-            id(echo_base_player)
+          if ( (id(echo_pyramid_player).state != media_player::MediaPlayerState::MEDIA_PLAYER_STATE_ANNOUNCING ) || priority) {
+            id(echo_pyramid_player)
               ->play_file(sound_file, true, false);
           }
 
