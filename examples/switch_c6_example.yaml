@@ -3,6 +3,11 @@ esphome:
   platform: ESP32
   board: esp32dev
 
+# Load local custom components (espnow and espnow_switch_c6) from parent folder
+external_components:
+  - source: local
+    path: ..
+
 # Keep it simple: run ESPNOW-only and fix channel explicitly
 logger:
   level: DEBUG
@@ -33,6 +38,6 @@ switch:
   - platform: espnow_switch_c6
     name: "SwitchC6"
     espnow_id: espnow1
-    mac: "XXXX-XXXX-XXXX"   # set your device short MAC
+    mac: "B43A-4581-EC70"   # target MAC from B4:3A:45:81:EC:70
     channel: 1
     optimistic: true
